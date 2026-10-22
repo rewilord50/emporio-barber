@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Barbearia Navalha – Agende seu horário</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f4;--card:#fff;--ink:#101b2d;--mut:#5b6678;--line:#d5dbe4;--red:#c8102e;--blue:#1f4e9e;--sel:#101b2d;--onsel:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1523;--card:#16213a;--ink:#eef1f6;--mut:#9aa6bb;--line:#2b3955;--red:#ef4660;--blue:#6f9bf0;--sel:#eef1f6;--onsel:#0d1523}}
+:root[data-theme="dark"]{--bg:#0d1523;--card:#16213a;--ink:#eef1f6;--mut:#9aa6bb;--line:#2b3955;--red:#ef4660;--blue:#6f9bf0;--sel:#eef1f6;--onsel:#0d1523}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.5 "Source Sans 3",system-ui,sans-serif}
+h1,h2{font-family:Oswald,Impact,sans-serif;font-weight:700;margin:0;letter-spacing:.01em}
+.pole{height:12px;background:repeating-linear-gradient(-45deg,var(--red) 0 12px,#fff 12px 24px,var(--blue) 24px 36px,#fff 36px 48px)}
+header{max-width:760px;margin:0 auto;padding:28px 20px 8px}
+h1{font-size:clamp(2.4rem,9vw,4rem);line-height:1.02}
+header p{color:var(--mut);margin:10px 0 0;max-width:46ch}
+main{max-width:760px;margin:0 auto;padding:12px 20px 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+h2{font-size:1.4rem;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
+h2 small{font:600 .95rem "Source Sans 3",sans-serif;color:var(--mut)}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.days{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+button{font:inherit;color:inherit;cursor:pointer}
+.opt,.day,.slot{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:12px;text-align:left}
+.opt b{display:block}.opt span{color:var(--mut);font-size:.92rem}
+.day{min-width:68px;text-align:center;padding:10px 8px;flex:0 0 auto}
+.day b{display:block;font:700 1.4rem Oswald,sans-serif}.day span{font-size:.85rem;color:var(--mut);text-transform:capitalize}
+.slot{text-align:center;padding:10px 4px;font-weight:600}
+[aria-pressed="true"]{background:var(--sel);border-color:var(--sel);color:var(--onsel)}
+[aria-pressed="true"] span{color:inherit;opacity:.8}
+.slot:disabled{opacity:.4;text-decoration:line-through;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.msg{color:var(--mut);margin:0}
+form{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px}
+.sum{margin:0;font-weight:600}
+label{display:grid;gap:4px;font-weight:600;font-size:.95rem}
+input{font:inherit;padding:11px 12px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.go{background:var(--red);color:#fff;border:0;border-radius:10px;padding:14px;font:700 1.1rem Oswald,sans-serif;letter-spacing:.03em}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--red);margin:0;font-weight:600;min-height:1.5em}
+.ok{background:var(--card);border:2px solid var(--blue);border-radius:10px;padding:16px}
+.ok p{margin:4px 0}
+.mine{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.mine li{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.mine button{background:none;border:2px solid var(--line);border-radius:8px;padding:6px 10px}
+footer{max-width:760px;margin:0 auto;padding:0 20px 32px;color:var(--mut);font-size:.9rem}
+@media (prefers-reduced-motion:no-preference){.ok{animation:in .25s ease-out}@keyframes in{from{transform:scale(.97);opacity:0}}}
+</style>
+</head>
+<body>
+<div class="pole" role="presentation"></div>
+<header>
+  <h1>Barbearia Navalha</h1>
+  <p>Escolha o serviço, o barbeiro e o horário. Segunda a sexta, das 9h às 19h. Sábado, das 8h às 16h. Domingo fechado.</p>
+</header>
+<main>
+  <section><h2>1. Serviço</h2><div class="opts" id="svc"></div></section>
+  <section><h2>2. Barbeiro</h2><div class="opts" id="bar"></div></section>
+  <section><h2>3. Dia</h2><div class="days" id="days"></div></section>
+  <section><h2>4. Horário <small id="slotinfo"></small></h2><div class="slots" id="slots"></div><p class="msg" id="slotmsg">Escolha serviço, barbeiro e dia para ver os horários livres.</p></section>
+  <section>
+    <h2>5. Seus dados</h2>
+    <form id="f" novalidate>
+      <p class="sum" id="sum">Nada selecionado ainda.</p>
+      <label>Nome<input id="name" autocomplete="name" required></label>
+      <label>WhatsApp com DDD<input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(42) 99999-0000" required></label>
+      <p class="err" id="err" role="alert"></p>
+      <button class="go" id="go" type="submit" disabled>Confirmar horário</button>
+    </form>
+  </section>
+  <section id="doneWrap" hidden></section>
+  <section><h2>Meus agendamentos</h2><ul class="mine" id="mine"></ul><p class="msg" id="none">Você ainda não tem horários marcados neste aparelho.</p></section>
+</main>
+<footer>Os agendamentos ficam salvos apenas neste navegador. Para remarcar ou cancelar de outro aparelho, fale com a barbearia.</footer>
+<script>
+const SERVICES=[{id:'corte',n:'Corte',d:30,p:45},{id:'barba',n:'Barba',d:30,p:35},{id:'combo',n:'Corte + barba',d:60,p:70},{id:'sob',n:'Sobrancelha',d:30,p:15}];
+const BARBERS=['Rafael','Diego','Matheus'];
+const s={svc:null,bar:null,date:null,time:null};
+let bookings=[];
+try{bookings=JSON.parse(localStorage.getItem('navalha_bk')||'[]')}catch(e){bookings=[]}
+const save=()=>{try{localStorage.setItem('navalha_bk',JSON.stringify(bookings))}catch(e){}};
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const key=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fromKey=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c)};
+const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const brl=v=>'R$ '+v.toLocaleString('pt-BR');
+const hours=d=>{const w=d.getDay();return w===0?null:w===6?[480,960]:[540,1140]};
+const svcOf=id=>SERVICES.find(x=>x.id===id);
+const longDate=k=>fromKey(k).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+
+const days=[];
+for(let i=0;days.length<14;i++){const d=new Date();const mins=d.getHours()*60+d.getMinutes();d.setHours(0,0,0,0);d.setDate(d.getDate()+i);const h=hours(d);if(!h||(i===0&&mins>=h[1]-30))continue;days.push(d)}
+
+function free(dateKey,bar,start,dur){
+  const d=fromKey(dateKey),h=hours(d);if(!h)return false;
+  if(start<h[0]||start+dur>h[1])return false;
+  const now=new Date();
+  if(dateKey===key(now)&&start<=now.getHours()*60+now.getMinutes())return false;
+  return !bookings.some(b=>b.date===dateKey&&b.bar===bar&&start<b.start+b.dur&&b.start<start+dur);
+}
+
+function render(){
+  $('svc').innerHTML=SERVICES.map(x=>`<button class="opt" data-k="svc" data-v="${x.id}" aria-pressed="${s.svc===x.id}"><b>${x.n}</b><span>${x.d} min · ${brl(x.p)}</span></button>`).join('');
+  $('bar').innerHTML=BARBERS.map(x=>`<button class="opt" data-k="bar" data-v="${x}" aria-pressed="${s.bar===x}"><b>${x}</b></button>`).join('');
+  $('days').innerHTML=days.map(d=>{const k=key(d);return `<button class="day" data-k="date" data-v="${k}" aria-pressed="${s.date===k}" aria-label="${longDate(k)}"><span>${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span><b>${d.getDate()}</b><span>${d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></button>`}).join('');
+  const ready=s.svc&&s.bar&&s.date;
+  let html='',count=0;
+  if(ready){
+    const sv=svcOf(s.svc),h=hours(fromKey(s.date));
+    for(let m=h[0];m<h[1];m+=30){
+      const ok=free(s.date,s.bar,m,sv.d);if(ok)count++;
+      html+=`<button class="slot" data-k="time" data-v="${m}" aria-pressed="${s.time===m}" ${ok?'':'disabled'}>${hm(m)}</button>`;
+    }
+  }
+  $('slots').innerHTML=html;
+  $('slotmsg').hidden=!!ready&&count>0;
+  $('slotmsg').textContent=ready?'Não há horários livres neste dia. Tente outro dia ou outro barbeiro.':'Escolha serviço, barbeiro e dia para ver os horários livres.';
+  $('slotinfo').textContent=ready&&count?count+' livres':'';
+  const full=ready&&s.time!=null;
+  if(full){const sv=svcOf(s.svc);$('sum').textContent=`${sv.n} com ${s.bar}, ${longDate(s.date)}, às ${hm(s.time)}. ${brl(sv.p)}, pago na barbearia.`}
+  else $('sum').textContent='Escolha serviço, barbeiro, dia e horário para continuar.';
+  $('go').disabled=!full;
+  const mine=bookings.slice().sort((a,b)=>(a.date+hm(a.start)).localeCompare(b.date+hm(b.start)));
+  $('mine').innerHTML=mine.map(b=>`<li><span><b>${svcOf(b.svc).n}</b> com ${esc(b.bar)}<br>${longDate(b.date)}, ${hm(b.start)}</span><button data-cancel="${b.id}" aria-label="Cancelar agendamento">Cancelar</button></li>`).join('');
+  $('none').hidden=mine.length>0;
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.cancel){bookings=bookings.filter(b=>b.id!==t.dataset.cancel);save();render();return}
+  const k=t.dataset.k;if(!k)return;
+  let v=t.dataset.v;if(k==='time')v=Number(v);
+  s[k]=v;
+  if(k!=='time'&&s.time!=null&&!(s.svc&&s.bar&&s.date&&free(s.date,s.bar,s.time,svcOf(s.svc).d)))s.time=null;
+  $('err').textContent='';render();
+});
+
+$('f').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=$('name').value.trim(),tel=$('tel').value.replace(/\D/g,'');
+  if(name.length<2){$('err').textContent='Informe seu nome.';$('name').focus();return}
+  if(tel.length<10){$('err').textContent='Informe o WhatsApp com DDD.';$('tel').focus();return}
+  const sv=svcOf(s.svc);
+  if(!free(s.date,s.bar,s.time,sv.d)){$('err').textContent='Esse horário acabou de ser ocupado. Escolha outro.';s.time=null;render();return}
+  const b={id:String(Date.now()),svc:s.svc,bar:s.bar,date:s.date,start:s.time,dur:sv.d,name,tel};
+  bookings.push(b);save();
+  const w=$('doneWrap');w.hidden=false;
+  w.innerHTML=`<div class="ok" role="status" tabindex="-1"><h2>Horário confirmado</h2><p><b>${sv.n}</b> com ${esc(b.bar)}</p><p>${longDate(b.date)}, às ${hm(b.start)}</p><p>${esc(name)}, chegue 5 minutos antes. Para cancelar, use a lista abaixo.</p></div>`;
+  w.firstChild.focus();w.scrollIntoView({behavior:'smooth',block:'center'});
+  s.time=null;$('err').textContent='';render();
+});
+render();
+</script>
+</body>
+</html>
